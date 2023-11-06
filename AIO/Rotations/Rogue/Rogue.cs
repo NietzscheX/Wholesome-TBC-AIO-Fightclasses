@@ -144,6 +144,7 @@ namespace WholesomeTBCAIO.Rotations.Rogue
         protected AIOSpell GhostlyStrike = new AIOSpell("Ghostly Strike");
         protected AIOSpell Rupture = new AIOSpell("Rupture");
         protected AIOSpell Shiv = new AIOSpell("Shiv");
+        protected AIOSpell PickPocket = new AIOSpell("PickPocket");
 
         protected bool BehindTargetCheck => _behindTargetTimer.IsReady && ToolBox.MeBehindTarget();
 
@@ -324,7 +325,7 @@ namespace WholesomeTBCAIO.Rotations.Rogue
                         break;
                     }
 
-                    if (specialization.RotationType != Enums.RotationType.Party 
+                    if (specialization.RotationType != Enums.RotationType.Party
                         && unitCache.GetClosestHostileFrom(Target, 20f) != null)
                     {
                         Logger.Log($"Approach interrupted because an enemy is too close");

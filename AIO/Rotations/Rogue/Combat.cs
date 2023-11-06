@@ -21,6 +21,14 @@ namespace WholesomeTBCAIO.Rotations.Rogue
             base.BuffRotation();
         }
 
+        private bool CanDismantle()
+        {
+            return Target.CreatureTypeTarget.Equals("Humanoid") ||
+             Target.CreatureTypeTarget.Equals("Undead") ||
+             Target.CreatureTypeTarget.Equals("Demon") ||
+             Target.CreatureTypeTarget.Equals("Giant");
+        }
+
         protected override void Pull()
         {
             base.Pull();
@@ -57,12 +65,28 @@ namespace WholesomeTBCAIO.Rotations.Rogue
             if (Target.GetDistance < 6f && !Me.HasAura(Stealth))
                 ToggleAutoAttack(true);
         }
-
+        private bool CanDismantle(WoWUnit unit)
+        {
+            return unit.
+        }
         protected override void CombatRotation()
         {
             base.CombatRotation();
 
             bool _shouldBeInterrupted = WTCombat.TargetIsCasting();
+
+
+            // 搜索  + 偷袭
+            if (Me.HasAura(Stealth) && Target.GetDistance < 6f)
+            {
+                if (CanDismantle())
+                {
+                    cast.OnTarget(PickPocket)
+                }
+                if (cast.OnTarget(CheapShot))
+                    return;
+            }
+
 
             // Force melee
             if (_combatMeleeTimer.IsReady)
@@ -81,6 +105,7 @@ namespace WholesomeTBCAIO.Rotations.Rogue
             }
 
             // Kick interrupt
+            // 脚踢
             if (_shouldBeInterrupted)
             {
                 Thread.Sleep(Main.humanReflexTime);
@@ -89,21 +114,25 @@ namespace WholesomeTBCAIO.Rotations.Rogue
             }
 
             // Adrenaline Rush
+            // 冲动
             if ((unitCache.EnemiesAttackingMe.Count > 1 || Target.IsElite) && !Me.HasAura(AdrenalineRush))
                 if (cast.OnTarget(AdrenalineRush))
                     return;
 
             // Blade Flurry
+            // 剑刃乱舞
             if (unitCache.EnemiesAttackingMe.Count > 1 && !Me.HasAura(BladeFlurry))
                 if (cast.OnTarget(BladeFlurry))
                     return;
 
             // Riposte
+            // 战斗天赋的还击
             if (Riposte.IsSpellUsable && (Target.CreatureTypeTarget.Equals("Humanoid") || settings.SC_RiposteAll))
                 if (cast.OnTarget(Riposte))
                     return;
 
             // Bandage
+            // 绷带？
             if (Target.HasAura(Blind))
             {
                 MovementManager.StopMoveTo(true, 500);
@@ -114,6 +143,7 @@ namespace WholesomeTBCAIO.Rotations.Rogue
             }
 
             // Blind
+            // 致盲
             if (Me.HealthPercent < 40
                 && !WTEffects.HasDebuff("Recently Bandaged")
                 && _myBestBandage != null
@@ -122,11 +152,13 @@ namespace WholesomeTBCAIO.Rotations.Rogue
                     return;
 
             // Evasion
+            // 闪避
             if (unitCache.EnemiesAttackingMe.Count > 1 || Me.HealthPercent < 30 && !Me.HasAura(Evasion) && Target.HealthPercent > 50)
                 if (cast.OnTarget(Evasion))
                     return;
 
             // Cloak of Shadows
+            // 暗影斗篷
             if (Me.HealthPercent < 30
                 && !Me.HasAura(CloakOfShadows)
                 && Target.HealthPercent > 50)
@@ -134,12 +166,14 @@ namespace WholesomeTBCAIO.Rotations.Rogue
                     return;
 
             // Backstab in combat
+            // 背刺
             if (IsTargetStunned()
                 && WTGear.GetMainHandWeaponType().Equals("Daggers"))
                 if (cast.OnTarget(Backstab))
                     return;
 
             // Slice and Dice
+            // 切割
             if (!Me.HasAura(SliceAndDice)
                 && Me.ComboPoint > 1
                 && Target.HealthPercent > 40)
@@ -147,6 +181,7 @@ namespace WholesomeTBCAIO.Rotations.Rogue
                     return;
 
             // Eviscerate logic
+            // 剔骨
             if (Me.ComboPoint > 0 && Target.HealthPercent < 30
                 || Me.ComboPoint > 1 && Target.HealthPercent < 45
                 || Me.ComboPoint > 2 && Target.HealthPercent < 60
@@ -155,6 +190,7 @@ namespace WholesomeTBCAIO.Rotations.Rogue
                     return;
 
             // GhostlyStrike
+            // 鬼魅攻击
             if (Me.ComboPoint < 5 && !IsTargetStunned() &&
                 (!_fightingACaster || !Kick.KnownSpell ||
                 Me.Energy > GhostlyStrike.Cost + Kick.Cost))
@@ -162,6 +198,7 @@ namespace WholesomeTBCAIO.Rotations.Rogue
                     return;
 
             // Hemohrrage
+            // 出血
             if (Me.ComboPoint < 5 && !IsTargetStunned() &&
                 (!_fightingACaster || !Kick.KnownSpell ||
                 Me.Energy > Hemorrhage.Cost + Kick.Cost))
@@ -169,6 +206,7 @@ namespace WholesomeTBCAIO.Rotations.Rogue
                     return;
 
             // Sinister Strike
+            // 邪恶攻击 
             if (Me.ComboPoint < 5 && !IsTargetStunned() &&
                 (!_fightingACaster || !Kick.KnownSpell ||
                 Me.Energy > SinisterStrike.Cost + Kick.Cost))
