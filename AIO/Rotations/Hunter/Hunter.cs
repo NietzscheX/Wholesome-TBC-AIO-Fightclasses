@@ -87,10 +87,10 @@ namespace WholesomeTBCAIO.Rotations.Hunter
                                 Feed();
 
                             // Switch Auto Growl
-                            int growlIndex = WTPet.GetPetSpellIndex("Growl");
+                            int growlIndex = cast.GetPetSpellIndex(PetSpellIds.Growl);
                             WTPet.TogglePetSpellAuto(growlIndex, settings.AutoGrowl);
 
-                            int chargeIndex = WTPet.GetPetSpellIndex("Charge");
+                            int chargeIndex = cast.GetPetSpellIndex(PetSpellIds.Charge);
                             WTPet.TogglePetSpellAuto(chargeIndex, true);
                         }
 
@@ -141,9 +141,9 @@ namespace WholesomeTBCAIO.Rotations.Hunter
                                 && RotationType != Enums.RotationType.Party)
                             {
                                 Me.SetFocus(petTarget.Guid);
-                                if (cast.PetSpell("Growl", true)
-                                    || cast.PetSpell("Taunt", true)
-                                    || cast.PetSpell("Thunderstomp", true))
+                                if (cast.PetSpellById(PetSpellIds.Growl, true)
+                                    || cast.PetSpellById(PetSpellIds.Taunt, true)
+                                    || cast.PetSpellById(PetSpellIds.Thunderstomp, true))
                                 {
                                     Lua.LuaDoString("ClearFocus();");
                                     continue;
@@ -154,19 +154,19 @@ namespace WholesomeTBCAIO.Rotations.Hunter
                             if (petTarget != null)
                             {
                                 // Pet damage spells
-                                if (cast.PetSpellIfEnoughForGrowl("Bite"))
+                                if (cast.PetSpellIfEnoughForGrowl(PetSpellIds.Bite))
                                     continue;
-                                if (cast.PetSpellIfEnoughForGrowl("Gore"))
+                                if (cast.PetSpellIfEnoughForGrowl(PetSpellIds.Gore))
                                     continue;
-                                if (cast.PetSpellIfEnoughForGrowl("Scorpid Poison"))
+                                if (cast.PetSpellIfEnoughForGrowl(PetSpellIds.ScorpidPoison))
                                     continue;
-                                if (cast.PetSpellIfEnoughForGrowl("Screech"))
+                                if (cast.PetSpellIfEnoughForGrowl(PetSpellIds.Screech))
                                     continue;
-                                if (cast.PetSpellIfEnoughForGrowl("Lightning Breath"))
+                                if (cast.PetSpellIfEnoughForGrowl(PetSpellIds.LightningBreath))
                                     continue;
-                                if (cast.PetSpellIfEnoughForGrowl("Swipe"))
+                                if (cast.PetSpellIfEnoughForGrowl(PetSpellIds.Swipe))
                                     continue;
-                                if (cast.PetSpellIfEnoughForGrowl("Claw"))
+                                if (cast.PetSpellIfEnoughForGrowl(PetSpellIds.Claw))
                                     continue;
                             }
                         }

@@ -9,6 +9,15 @@ namespace WholesomeTBCAIO.Helpers
     public class AIOSpell : Spell
     {
         public new string Name { get; }
+        /// <summary>
+        /// The spell name in the client's language (e.g., Chinese, German, etc.)
+        /// Used for casting spells via macro commands
+        /// </summary>
+        public string LocalizedName { get; }
+        /// <summary>
+        /// The localized rank string from the client (e.g., "等级 1" for Chinese, "Rank 1" for English)
+        /// </summary>
+        public string LocalizedRankString { get; }
         public int Rank { get; }
         public int Cost { get; }
         public int PowerType { get; }
@@ -46,30 +55,44 @@ namespace WholesomeTBCAIO.Helpers
             IsResurrectionSpell = ResurrectionSpells.Contains(Name);
             //IsClickOnTerrain = ClickOnTerrainSpells.Contains(Name);
 
+            // Get spell ID first using English name (WTSpell.GetId works with English names)
             SpellId = WTSpell.GetId(Name, rank);
 
             if (Name.Contains("(") || Name.Contains(")"))
                 Name += "()";
 
-            string rankString = rank > 0 ? $@", ""Rank {rank}""" : "";
-
+            // Use SpellId to get localized spell info - this works regardless of client language
+            // GetSpellInfo(spellId) returns the spell name in the client's language
             string infos = Lua.LuaDoString<string>($@"
-                local name, rank, icon, cost, isFunnel, powerType, castTime, minRange, maxRange = GetSpellInfo(""{Name.Replace("\"", "\\\"")}""{rankString});
+                local name, rank, icon, cost, isFunnel, powerType, castTime, minRange, maxRange = GetSpellInfo({SpellId});
                 if (name == nil) then return nil end
-                if (rank == '' or rank == 'Racial' or rank == 'Shapeshift' or rank == 'Summon') then
-                    rank = 'Rank 0'
+                local rankNum = 0;
+                if (rank ~= nil and rank ~= '') then
+                    -- Extract number from rank string (works for any language)
+                    local num = string.match(rank, '%d+');
+                    if (num ~= nil) then
+                        rankNum = num;
+                    end
                 end
-                return name..'$'..rank..'$'..cost..'$'..powerType..'$'..castTime..'$'..minRange..'$'..maxRange;");
+                return name..'$'..rankNum..'$'..(rank or '')..'$'..cost..'$'..powerType..'$'..castTime..'$'..minRange..'$'..maxRange;");
             string[] infosArray = infos.Split('$');
 
             if (infosArray.Length > 1)
             {
-                Rank = ParseInt(infosArray[1].Replace("Rank ", ""));
-                Cost = ParseInt(infosArray[2]);
-                PowerType = ParseInt(infosArray[3]);
-                CastTime = ParseInt(infosArray[4]);
-                MinRange = ParseInt(infosArray[5]);
-                MaxRange = ParseInt(infosArray[6]);
+                LocalizedName = infosArray[0];
+                Rank = ParseInt(infosArray[1]);
+                LocalizedRankString = infosArray[2]; // The full localized rank string (e.g., "等级 1" or "Rank 1")
+                Cost = ParseInt(infosArray[3]);
+                PowerType = ParseInt(infosArray[4]);
+                CastTime = ParseInt(infosArray[5]);
+                MinRange = ParseInt(infosArray[6]);
+                MaxRange = ParseInt(infosArray[7]);
+            }
+            else
+            {
+                // Fallback to English name if spell info not found
+                LocalizedName = Name.Replace("()", "");
+                LocalizedRankString = rank > 0 ? $"Rank {rank}" : "";
             }
 
             ForceLua = rank > 0 || Name.Contains("()");
@@ -89,9 +112,10 @@ namespace WholesomeTBCAIO.Helpers
                 if (stopMove)
                     MovementManager.StopMoveNewThread();
 
-                string rankString = Rank > 0 ? $"(Rank {Rank})" : "()";
-                Logger.LogFight($"[Spell-LUA] Cast (on {unit}) {Name.Replace("()", "")} {rankString}");
-                Lua.RunMacroText($"/cast [target={unit}] {Name.Replace("()", "")}{rankString}");
+                // Use LocalizedRankString for casting (works for any client language)
+                string rankString = !string.IsNullOrEmpty(LocalizedRankString) ? $"({LocalizedRankString})" : "";
+                Logger.LogFight($"[Spell-LUA] Cast (on {unit}) {LocalizedName} {rankString}");
+                Lua.RunMacroText($"/cast [target={unit}] {LocalizedName}{rankString}");
             }
         }
 
@@ -101,9 +125,10 @@ namespace WholesomeTBCAIO.Helpers
                 base.Launch();
             else
             {
-                string rankString = Rank > 0 ? $"(Rank {Rank})" : "()";
-                Logger.LogFight($"[Spell] Cast (on target) {Name} {rankString}");
-                Lua.RunMacroText($"/cast {Name}{rankString}");
+                // Use LocalizedRankString for casting (works for any client language)
+                string rankString = !string.IsNullOrEmpty(LocalizedRankString) ? $"({LocalizedRankString})" : "";
+                Logger.LogFight($"[Spell] Cast (on target) {LocalizedName} {rankString}");
+                Lua.RunMacroText($"/cast {LocalizedName}{rankString}");
             }
         }
 
@@ -128,7 +153,10 @@ namespace WholesomeTBCAIO.Helpers
         {
             Logger.Log($"**************************");
             Logger.Log($"Name : {Name}");
+            Logger.Log($"LocalizedName : {LocalizedName}");
+            Logger.Log($"SpellId : {SpellId}");
             Logger.Log($"Rank : {Rank}");
+            Logger.Log($"LocalizedRankString : {LocalizedRankString}");
             Logger.Log($"Cost : {Cost}");
             Logger.Log($"PowerType : {PowerType}");
             Logger.Log($"CastTime : {CastTime}");

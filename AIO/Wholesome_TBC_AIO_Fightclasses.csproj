@@ -99,6 +99,7 @@
     <Compile Include="Helpers\Enums.cs" />
     <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Helpers\AIOPetSpell.cs" />
+    <Compile Include="Helpers\PetSpellIds.cs" />
     <Compile Include="Helpers\RangeManager.cs" />
     <Compile Include="Helpers\StatusChecker.cs" />
     <Compile Include="Helpers\UnitImmunities.cs" />

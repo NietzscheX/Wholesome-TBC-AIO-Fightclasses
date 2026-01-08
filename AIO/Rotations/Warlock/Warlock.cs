@@ -125,13 +125,13 @@ namespace WholesomeTBCAIO.Rotations.Warlock
                                 if (!settings.AutoTorment
                                     && WarlockPetAndConsumables.MyWarlockPet().Equals("Voidwalker"))
                                 {
-                                    cast.PetSpell("Torment", true);
-                                    cast.PetSpell("Suffering", true);
+                                    cast.PetSpellById(PetSpellIds.Torment, true);
+                                    cast.PetSpellById(PetSpellIds.Suffering, true);
                                 }
                                 if (!settings.AutoAnguish
                                     && WarlockPetAndConsumables.MyWarlockPet().Equals("Felguard"))
                                 {
-                                    cast.PetSpell("Anguish", true);
+                                    cast.PetSpellById(PetSpellIds.Anguish, true);
                                 }
                                 Lua.LuaDoString("ClearFocus();");
                             }
@@ -140,18 +140,18 @@ namespace WholesomeTBCAIO.Rotations.Warlock
                         // Switch Auto Torment & Suffering off
                         if (WarlockPetAndConsumables.MyWarlockPet().Equals("Voidwalker"))
                         {
-                            int tormentIndex = WTPet.GetPetSpellIndex("Torment");
+                            int tormentIndex = cast.GetPetSpellIndex(PetSpellIds.Torment);
                             WTPet.TogglePetSpellAuto(tormentIndex, settings.AutoTorment);
-                            int sufferingIndex = WTPet.GetPetSpellIndex("Suffering");
+                            int sufferingIndex = cast.GetPetSpellIndex(PetSpellIds.Suffering);
                             WTPet.TogglePetSpellAuto(sufferingIndex, false);
                         }
 
                         // Switch Felguard Auto Cleave/Anguish
                         if (WarlockPetAndConsumables.MyWarlockPet().Equals("Felguard") && specialization.RotationType == Enums.RotationType.Solo)
                         {
-                            int cleaveIndex = WTPet.GetPetSpellIndex("Cleave");
+                            int cleaveIndex = cast.GetPetSpellIndex(PetSpellIds.Cleave);
                             WTPet.TogglePetSpellAuto(cleaveIndex, settings.FelguardCleave);
-                            int anguishIndex = WTPet.GetPetSpellIndex("Anguish");
+                            int anguishIndex = cast.GetPetSpellIndex(PetSpellIds.Anguish);
                             WTPet.TogglePetSpellAuto(anguishIndex, settings.AutoAnguish);
                         }
                     }
@@ -322,9 +322,9 @@ namespace WholesomeTBCAIO.Rotations.Warlock
             // Imp Firebolt
             if (WarlockPetAndConsumables.MyWarlockPet().Equals("Imp"))
             {
-                int fireboltIndex = WTPet.GetPetSpellIndex("Firebolt");
+                int fireboltIndex = cast.GetPetSpellIndex(PetSpellIds.Firebolt);
                 WTPet.TogglePetSpellAuto(fireboltIndex, true);
-                int bloodPactIndex = WTPet.GetPetSpellIndex("Blood Pact");
+                int bloodPactIndex = cast.GetPetSpellIndex(PetSpellIds.BloodPact);
                 WTPet.TogglePetSpellAuto(bloodPactIndex, true);
             }
         }

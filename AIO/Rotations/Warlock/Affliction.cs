@@ -63,7 +63,7 @@ namespace WholesomeTBCAIO.Rotations.Warlock
                 Fight.StopFight();
 
                 if (WarlockPetAndConsumables.MyWarlockPet().Equals("Voidwalker"))
-                    cast.PetSpell("Consume Shadows", false, true);
+                    cast.PetSpellById(PetSpellIds.ConsumeShadows, false, true);
 
                 if (cast.OnSelf(HealthFunnel))
                 {

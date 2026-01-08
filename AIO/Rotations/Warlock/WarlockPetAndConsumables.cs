@@ -60,15 +60,17 @@ namespace WholesomeTBCAIO.Rotations.Warlock
         {
             return Lua.LuaDoString<string>
                 ($"for i=1,10 do " +
-                    "local name, _, _, _, _, _, _ = GetPetActionInfo(i); " +
-                    "if name == 'Firebolt' then " +
-                    "return 'Imp' " +
-                    "end " +
-                    "if name == 'Torment' then " +
-                    "return 'Voidwalker' " +
-                    "end " +
-                    "if name == 'Anguish' or name == 'Cleave' then " +
-                    "return 'Felguard' " +
+                    "local name, _, icon = GetPetActionInfo(i); " +
+                    "if icon then " +
+                        "if string.find(string.lower(icon), 'firebolt') then " +
+                        "return 'Imp' " +
+                        "end " +
+                        "if string.find(string.lower(icon), 'gathershadows') then " +
+                        "return 'Voidwalker' " +
+                        "end " +
+                        "if string.find(string.lower(icon), 'painspike') or string.find(string.lower(icon), 'warrior_cleave') then " +
+                        "return 'Felguard' " +
+                        "end " +
                     "end " +
                 "end");
         }

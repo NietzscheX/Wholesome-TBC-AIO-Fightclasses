@@ -65,12 +65,27 @@ namespace WholesomeTBCAIO.Helpers
         {
             _petSpells.Clear();
 
+            // Get pet spells with spell IDs using GetSpellLink to extract the ID
             string[] luaPetSpells = Lua.LuaDoString<string[]>($@"
                 local result = {{}};
                 for i=1,20 do
                     local name, rank, icon, powerCost, isFunnel, powerType, castingTime, minRange, maxRange = GetSpellInfo(i, 'pet');
                     if name ~= nil then
-                        table.insert(result, i .. '$' .. name .. '$' .. rank .. '$' .. powerCost .. '$' .. tostring(isFunnel) .. '$' .. powerType .. '$' .. castingTime .. '$' .. minRange .. '$' .. maxRange);
+                        -- Extract spell ID from GetSpellLink
+                        local link = GetSpellLink(i, 'pet');
+                        local spellId = 0;
+                        if link then
+                            spellId = tonumber(string.match(link, 'spell:(%d+)')) or 0;
+                        end
+                        -- Extract rank number from rank string (works for any language)
+                        local rankNum = 0;
+                        if rank ~= nil and rank ~= '' then
+                            local num = string.match(rank, '%d+');
+                            if num ~= nil then
+                                rankNum = num;
+                            end
+                        end
+                        table.insert(result, i .. '$' .. spellId .. '$' .. name .. '$' .. (rank or '') .. '$' .. rankNum .. '$' .. powerCost .. '$' .. tostring(isFunnel) .. '$' .. powerType .. '$' .. castingTime .. '$' .. minRange .. '$' .. maxRange);
                     end
                 end
                 return unpack(result);
@@ -79,31 +94,89 @@ namespace WholesomeTBCAIO.Helpers
             foreach(string spellLine in luaPetSpells)
             {
                 string[] spellProps = spellLine.Split('$');
-                if (spellProps.Length == 9)
+                if (spellProps.Length == 11)
                 {
                     int index = int.Parse(spellProps[0]);
-                    string name = spellProps[1];
-                    // rank can be empty
+                    uint spellId = uint.Parse(spellProps[1]);
+                    string name = spellProps[2];
+                    string localizedRankString = spellProps[3];
                     int rank = 0;
-                    if (spellProps[2].Length > 0 && spellProps[2].Contains("Rank "))
+                    if (!string.IsNullOrEmpty(spellProps[4]))
                     {
-                        rank = int.Parse(spellProps[2].Replace("Rank ", ""));
+                        int.TryParse(spellProps[4], out rank);
                     }
-                    int powerCost = int.Parse(spellProps[3]);
-                    bool isFunnel = spellProps[4] == "true" ? true : false;
-                    int powerType = int.Parse(spellProps[5]);
-                    int castingTime = int.Parse(spellProps[6]);
-                    int minRange = int.Parse(spellProps[7]);
-                    int maxRange = int.Parse(spellProps[8]);                    
-                    _petSpells.Add(new AIOPetSpell(index, name, rank, powerCost, isFunnel, powerType, castingTime, minRange, maxRange));
+                    int powerCost = int.Parse(spellProps[5]);
+                    bool isFunnel = spellProps[6] == "true" ? true : false;
+                    int powerType = int.Parse(spellProps[7]);
+                    int castingTime = int.Parse(spellProps[8]);
+                    int minRange = int.Parse(spellProps[9]);
+                    int maxRange = int.Parse(spellProps[10]);                    
+                    _petSpells.Add(new AIOPetSpell(index, spellId, name, localizedRankString, rank, powerCost, isFunnel, powerType, castingTime, minRange, maxRange));
                 }
             }
         }
 
+        /// <summary>
+        /// Cast a pet spell if there's enough focus for both the spell and Growl (using spell ID)
+        /// </summary>
+        /// <param name="spellId">The spell ID to cast</param>
+        public bool PetSpellIfEnoughForGrowl(uint spellId)
+        {
+            AIOPetSpell spell = _petSpells.Where(s => s.SpellId == spellId).FirstOrDefault();
+            AIOPetSpell growlSpell = _petSpells.Where(s => s.SpellId == PetSpellIds.Growl).FirstOrDefault();
+            if (spell == null) return false;
+            int growlCost = growlSpell == null ? 0 : growlSpell.Cost;
+
+            if (ObjectManager.Pet.Focus >= spell.Cost + growlCost)
+            {
+                ObjectManager.Me.FocusGuid = ObjectManager.Pet.Target;
+                if (PetSpellById(spellId, true))
+                {
+                    Lua.LuaDoString("ClearFocus();");
+                    return true;
+                }
+                Lua.LuaDoString("ClearFocus();");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Cast a pet spell using spell ID (language-independent)
+        /// </summary>
+        /// <param name="spellId">The spell ID to cast</param>
+        /// <param name="onFocus">Cast on focus target</param>
+        /// <param name="noTargetNeeded">Cast without requiring a target</param>
+        public bool PetSpellById(uint spellId, bool onFocus = false, bool noTargetNeeded = false)
+        {
+            AIOPetSpell spell = _petSpells.Where(s => s.SpellId == spellId).FirstOrDefault();
+            if (spell == null) return false;
+
+            if (WTPet.PetSpellReady(spell.Index)
+                && !UnitImmunities.Contains(_unitCache.Target, spell.Name)
+                && (ObjectManager.Pet.HasTarget || noTargetNeeded))
+            {
+                Thread.Sleep(ToolBox.GetLatency() + 100);
+                Logger.Combat($"Cast (Pet) {spell.Name} (ID: {spellId})");
+                if (!onFocus)
+                {
+                    Lua.LuaDoString($"CastSpell({spell.Index}, 'pet');");
+                }
+                else
+                {
+                    // Use localized rank string for casting
+                    string rankString = !string.IsNullOrEmpty(spell.LocalizedRankString) ? $"({spell.LocalizedRankString})" : "";
+                    Lua.RunMacroText($"/cast [target=focus] {spell.Name}{rankString}");
+                }
+                return true;
+            }
+            return false;
+        }
+
+        // Legacy method for backwards compatibility - tries to find spell by localized name
         public bool PetSpellIfEnoughForGrowl(string spellName)
         {
             AIOPetSpell spell = _petSpells.Where(s => s.Name == spellName).FirstOrDefault();
-            AIOPetSpell growlSpell = _petSpells.Where(s => s.Name == "Growl").FirstOrDefault();
+            AIOPetSpell growlSpell = _petSpells.Where(s => s.SpellId == PetSpellIds.Growl).FirstOrDefault();
             if (spell == null) return false;
             int growlCost = growlSpell == null ? 0 : growlSpell.Cost;
 
@@ -120,6 +193,7 @@ namespace WholesomeTBCAIO.Helpers
             return false;
         }
 
+        // Legacy method for backwards compatibility - tries to find spell by localized name
         public bool PetSpell(string spellName, bool onFocus = false, bool noTargetNeeded = false)
         {
             AIOPetSpell spell = _petSpells.Where(s => s.Name == spellName).FirstOrDefault();
@@ -130,19 +204,32 @@ namespace WholesomeTBCAIO.Helpers
                 && (ObjectManager.Pet.HasTarget || noTargetNeeded))
             {
                 Thread.Sleep(ToolBox.GetLatency() + 100);
-                Logger.Combat($"Cast (Pet) {spellName}");
+                Logger.Combat($"Cast (Pet) {spell.Name}");
                 if (!onFocus)
                 {
                     Lua.LuaDoString($"CastSpell({spell.Index}, 'pet');");
                 }
                 else
                 {
-                    string rankString = spell.Rank > 0 ? $"(Rank {spell.Rank})" : "";
-                    Lua.RunMacroText($"/cast [target=focus] {spellName}{rankString}");
+                    // Use localized rank string for casting
+                    string rankString = !string.IsNullOrEmpty(spell.LocalizedRankString) ? $"({spell.LocalizedRankString})" : "";
+                    Lua.RunMacroText($"/cast [target=focus] {spell.Name}{rankString}");
                 }
                 return true;
             }
             return false;
+        }
+
+        public int GetPetSpellIndex(uint spellId)
+        {
+            AIOPetSpell spell = _petSpells.Where(s => s.SpellId == spellId).FirstOrDefault();
+            return spell != null ? spell.Index : 0;
+        }
+
+        public string GetPetSpellLocalizedName(uint spellId)
+        {
+            AIOPetSpell spell = _petSpells.Where(s => s.SpellId == spellId).FirstOrDefault();
+            return spell != null ? spell.Name : "";
         }
 
         public bool Buff(IWoWPlayer unit, AIOSpell spell, uint reagent = 0)
