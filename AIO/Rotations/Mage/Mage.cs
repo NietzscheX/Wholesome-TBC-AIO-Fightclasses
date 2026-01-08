@@ -296,7 +296,8 @@ namespace WholesomeTBCAIO.Rotations.Mage
                     {
                         Interact.InteractGameObject(enemy.GetBaseAddress);
 
-                        if ((enemy.CreatureTypeTarget == "Beast" || enemy.CreatureTypeTarget == "Humanoid")
+                        // Language-independent creature type check
+                        if ((enemy.IsBeast || enemy.IsHumanoid)
                         && enemy.Guid != firstTarget.Guid)
                         {
                             potentialPolymorphTarget = enemy;

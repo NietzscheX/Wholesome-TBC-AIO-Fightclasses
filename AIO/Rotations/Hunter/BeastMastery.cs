@@ -131,16 +131,16 @@ namespace WholesomeTBCAIO.Rotations.Hunter
                 && cast.OnSelf(FeignDeath))
                 return;
 
-            // Concussive Shot
-            if ((Target.CreatureTypeTarget == "Humanoid" || Target.Name.Contains("Plainstrider"))
+            // Concussive Shot (language-independent creature type check)
+            if ((Target.IsHumanoid || Target.Name.Contains("Plainstrider"))
                 && settings.BM_UseConcussiveShot
                 && Target.HealthPercent < 20
                 && !ConcussiveShot.TargetHaveBuff
                 && cast.OnTarget(ConcussiveShot))
                 return;
 
-            // Wing Clip
-            if ((Target.CreatureTypeTarget == "Humanoid" || Target.Name.Contains("Plainstrider"))
+            // Wing Clip (language-independent creature type check)
+            if ((Target.IsHumanoid || Target.Name.Contains("Plainstrider"))
                 && settings.BM_UseConcussiveShot
                 && Target.HealthPercent < 20
                 && !Target.HasAura(WingClip)

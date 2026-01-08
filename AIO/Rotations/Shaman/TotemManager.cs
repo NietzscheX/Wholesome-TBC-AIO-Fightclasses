@@ -66,7 +66,7 @@ namespace WholesomeTBCAIO.Rotations.Shaman
                 if (_lastTotemPosition != null
                     && haveTotem
                     && _lastTotemPosition.DistanceTo(Me.Position) > 17
-                    && !_unitCache.Me.HasAura("GhostWolf")
+                    && !_unitCache.Me.HasAuraById(SpellIds.GhostWolf)
                     && !Me.IsMounted
                     && !Me.IsCast
                     && Cast(TotemicCall))
@@ -103,7 +103,7 @@ namespace WholesomeTBCAIO.Rotations.Shaman
                 // Strenght of Earth totem
                 if ((spec is Enhancement || spec is EnhancementParty || spec is ShamanRestoParty)
                     && (!_settings.UseStoneSkinTotem || !StoneskinTotem.KnownSpell)
-                    && !Me.HaveBuff("Strength of Earth")
+                    && !_unitCache.Me.HasAuraById(SpellIds.StrengthOfEarth)
                     && !currentEarthTotem.Contains("Stoneclaw Totem")
                     && !currentEarthTotem.Contains("Earth Elemental Totem")
                     && (_unitCache.EnemiesAttackingMe.Count < 2 || spec.RotationType == Enums.RotationType.Party)
@@ -112,7 +112,7 @@ namespace WholesomeTBCAIO.Rotations.Shaman
 
                 // Stoneskin Totem
                 if ((_settings.UseStoneSkinTotem || !StrengthOfEarthTotem.KnownSpell || spec is Elemental || (spec.RotationType == Enums.RotationType.Solo && _unitCache.EnemiesAttackingMe.Count > 1))
-                    && !Me.HaveBuff("Stoneskin")
+                    && !_unitCache.Me.HasAuraById(SpellIds.Stoneskin)
                     && !currentEarthTotem.Contains("Stoneclaw Totem")
                     && !currentEarthTotem.Contains("Earth Elemental Totem")
                     && Cast(StoneskinTotem))
@@ -151,7 +151,7 @@ namespace WholesomeTBCAIO.Rotations.Shaman
 
                 // Totem of Wrath
                 if (!currentFireTotem.Contains("Totem of Wrath")
-                    && !Me.HaveBuff("Totem of Wrath")
+                    && !_unitCache.Me.HasAuraById(SpellIds.TotemOfWrath)
                     && _settings.UseTotemOfWrath
                     && Cast(TotemOfWrath))
                     return true;
@@ -169,7 +169,7 @@ namespace WholesomeTBCAIO.Rotations.Shaman
                     (@"local _, totemName, _, _ = GetTotemInfo(4); return totemName;");
 
                 // Mana Spring Totem
-                if (!Me.HaveBuff("Grace of Air")
+                if (!_unitCache.Me.HasAuraById(SpellIds.GraceOfAir)
                     && Cast(GraceOfAirTotem))
                     return true;
             }
@@ -196,7 +196,7 @@ namespace WholesomeTBCAIO.Rotations.Shaman
 
                 // Mana Spring Totem
                 if (!currentWaterTotem.Contains("Mana Tide")
-                    && !Me.HaveBuff("Mana Spring")
+                    && !_unitCache.Me.HasAuraById(SpellIds.ManaSpring)
                     && Cast(ManaSpringTotem))
                     return true;
             }

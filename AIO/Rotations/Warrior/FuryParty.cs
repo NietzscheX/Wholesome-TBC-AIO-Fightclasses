@@ -125,8 +125,8 @@ namespace WholesomeTBCAIO.Rotations.Warrior
                 && cast.OnSelf(BloodRage))
                 return;
 
-            // Hamstring
-            if ((Target.CreatureTypeTarget == "Humanoid" || Target.Name.Contains("Plainstrider"))
+            // Hamstring (language-independent creature type check)
+            if ((Target.IsHumanoid || Target.Name.Contains("Plainstrider"))
                 && inMeleeRange
                 && settings.PFU_UseHamstring
                 && Target.HealthPercent < 40

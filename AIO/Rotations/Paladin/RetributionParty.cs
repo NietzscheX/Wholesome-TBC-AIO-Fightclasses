@@ -207,9 +207,9 @@ namespace WholesomeTBCAIO.Rotations.Paladin
                 && cast.OnTarget(HammerOfWrath))
                 return;
 
-            // Exorcism
+            // Exorcism (language-independent creature type check)
             if (Me.ManaPercentage > settings.PRET_PartyRetExorcismThreshold
-                && (Target.CreatureTypeTarget == "Undead" || Target.CreatureTypeTarget == "Demon")
+                && (Target.IsUndead || Target.IsDemon)
                 && cast.OnTarget(Exorcism))
                 return;
 

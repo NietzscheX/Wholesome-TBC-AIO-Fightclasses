@@ -174,8 +174,8 @@ namespace WholesomeTBCAIO.Rotations.Paladin
                 && cast.OnSelf(AvengingWrath))
                 return;
 
-            // Exorcism
-            if ((Target.CreatureTypeTarget == "Undead" || Target.CreatureTypeTarget == "Demon")
+            // Exorcism (language-independent creature type check)
+            if ((Target.IsUndead || Target.IsDemon)
                 && settings.SRET_UseExorcism
                 && cast.OnTarget(Exorcism))
                 return;

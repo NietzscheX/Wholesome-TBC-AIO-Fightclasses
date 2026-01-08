@@ -29,6 +29,7 @@ namespace WholesomeTBCAIO.Managers.RacialsManager
         private readonly IPartyManager _partyManager;
         private readonly IUnitCache _unitCache;
         private bool _isRunning;
+        private AuraHelper _auraHelper = new AuraHelper();
 
         public RacialManager(IPartyManager partyManager, IUnitCache unitCache)
         {
@@ -98,9 +99,9 @@ namespace WholesomeTBCAIO.Managers.RacialsManager
         {
             if (WarStomp.KnownSpell
                 && WarStomp.IsSpellUsable
-                && !Me.HaveBuff("Bear Form")
-                && !Me.HaveBuff("Cat Form")
-                && !Me.HaveBuff("Dire Bear Form")
+                && !_auraHelper.PlayerHasAuraById(SpellIds.BearForm)
+                && !_auraHelper.PlayerHasAuraById(SpellIds.CatForm)
+                && !_auraHelper.PlayerHasAuraById(SpellIds.DireBearForm)
                 && _unitCache.EnemiesAttackingMe.Count > 1
                 && ObjectManager.Target.GetDistance < 8)
             {
@@ -113,11 +114,28 @@ namespace WholesomeTBCAIO.Managers.RacialsManager
         {
             if (Stoneform.KnownSpell
                 && Stoneform.IsSpellUsable
-                && (WTEffects.HasPoisonDebuff() || WTEffects.HasDiseaseDebuff() || Me.HaveBuff("Bleed")))
+                && (WTEffects.HasPoisonDebuff() || WTEffects.HasDiseaseDebuff() || HasBleedDebuff()))
             {
                 Stoneform.Launch();
                 Usefuls.WaitIsCasting();
             }
+        }
+
+        /// <summary>
+        /// Check if player has a bleed debuff (language-independent using debuff type)
+        /// </summary>
+        private bool HasBleedDebuff()
+        {
+            // Bleed is a debuff type, check using UnitDebuff with type check
+            return Lua.LuaDoString<bool>(@"
+                for i=1,40 do
+                    local _, _, _, _, debuffType = UnitDebuff('player', i);
+                    if debuffType == 'Bleed' then
+                        return true;
+                    end
+                end
+                return false;
+            ");
         }
 
         private void RacialGiftOfTheNaaru()
@@ -135,7 +153,7 @@ namespace WholesomeTBCAIO.Managers.RacialsManager
         {
             if (ArcaneTorrent.KnownSpell
                 && ArcaneTorrent.IsSpellUsable
-                && Me.HaveBuff("Mana Tap")
+                && _auraHelper.PlayerHasAuraById(SpellIds.ManaTap)
                 && (Me.ManaPercentage < 50 || (ObjectManager.Target.IsCast && ObjectManager.Target.GetDistance < 8)))
             {
                 ArcaneTorrent.Launch();
@@ -156,7 +174,7 @@ namespace WholesomeTBCAIO.Managers.RacialsManager
         {
             if (EscapeArtist.KnownSpell
                 && EscapeArtist.IsSpellUsable
-                && Me.Rooted || Me.HaveBuff("Frostnova"))
+                && (Me.Rooted || _auraHelper.PlayerHasAuraById(SpellIds.FrostNova)))
             {
                 EscapeArtist.Launch();
                 Usefuls.WaitIsCasting();
@@ -167,10 +185,58 @@ namespace WholesomeTBCAIO.Managers.RacialsManager
         {
             if (WillOfTheForsaken.KnownSpell
                 && WillOfTheForsaken.IsSpellUsable
-                && Me.HaveBuff("Fear") || Me.HaveBuff("Charm") || Me.HaveBuff("Sleep"))
+                && (HasFearDebuff() || HasCharmDebuff() || HasSleepDebuff()))
             {
                 WillOfTheForsaken.Launch();
             }
+        }
+
+        /// <summary>
+        /// Check if player has a fear debuff (language-independent using debuff type)
+        /// </summary>
+        private bool HasFearDebuff()
+        {
+            return Lua.LuaDoString<bool>(@"
+                for i=1,40 do
+                    local _, _, _, _, debuffType = UnitDebuff('player', i);
+                    if debuffType == 'Fear' then
+                        return true;
+                    end
+                end
+                return false;
+            ");
+        }
+
+        /// <summary>
+        /// Check if player has a charm debuff (language-independent using debuff type)
+        /// </summary>
+        private bool HasCharmDebuff()
+        {
+            return Lua.LuaDoString<bool>(@"
+                for i=1,40 do
+                    local _, _, _, _, debuffType = UnitDebuff('player', i);
+                    if debuffType == 'Charm' then
+                        return true;
+                    end
+                end
+                return false;
+            ");
+        }
+
+        /// <summary>
+        /// Check if player has a sleep debuff (language-independent using debuff type)
+        /// </summary>
+        private bool HasSleepDebuff()
+        {
+            return Lua.LuaDoString<bool>(@"
+                for i=1,40 do
+                    local _, _, _, _, debuffType = UnitDebuff('player', i);
+                    if debuffType == 'Sleep' then
+                        return true;
+                    end
+                end
+                return false;
+            ");
         }
 
         private void RacialManaTap()
@@ -187,14 +253,17 @@ namespace WholesomeTBCAIO.Managers.RacialsManager
 
         private void RacialCannibalize()
         {
-            // Cannibalize
+            // Cannibalize - use creature type check (language-independent)
             if (Cannibalize.KnownSpell
                 && Cannibalize.IsSpellUsable
                 && Me.HealthPercent < 50
-                && !Me.HaveBuff("Drink")
-                && !Me.HaveBuff("Food")
+                && !_auraHelper.PlayerHasDrinkAura()
+                && !_auraHelper.PlayerHasFoodAura()
                 && Me.IsAlive
-                && ObjectManager.GetObjectWoWUnit().Where(u => u.GetDistance <= 8 && u.IsDead && (u.CreatureTypeTarget == "Humanoid" || u.CreatureTypeTarget == "Undead")).Count() > 0)
+                && ObjectManager.GetObjectWoWUnit().Where(u => 
+                    u.GetDistance <= 8 
+                    && u.IsDead 
+                    && (AuraHelper.IsHumanoid("target") || AuraHelper.IsUndead("target"))).Count() > 0)
             {
                 Cannibalize.Launch();
                 Usefuls.WaitIsCasting();

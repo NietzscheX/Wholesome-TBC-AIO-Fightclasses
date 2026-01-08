@@ -173,8 +173,8 @@ namespace WholesomeTBCAIO.Rotations.Shaman
                 && cast.OnTarget(EarthShock))
                 return;
 
-            // Frost Shock
-            if ((Target.CreatureTypeTarget == "Humanoid" || Target.Name.Contains("Plainstrider"))
+            // Frost Shock (language-independent creature type check)
+            if ((Target.IsHumanoid || Target.Name.Contains("Plainstrider"))
                 && settings.ENH_FrostShockHumanoids
                 && Target.HealthPercent < 40
                 && !Target.HasAura(FrostShock)

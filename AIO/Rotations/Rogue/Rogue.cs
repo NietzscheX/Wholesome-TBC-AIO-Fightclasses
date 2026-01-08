@@ -38,23 +38,20 @@ namespace WholesomeTBCAIO.Rotations.Rogue
             settings = RogueSettings.Current;
             BaseInit(RangeManager.DefaultMeleeRange, SinisterStrike, null, settings);
 
-            WTSettings.AddToDoNotSellList(new List<string>
+            List<string> poisonNames = new List<string>();
+            foreach (uint poisonId in InstantPoisonDictionary.Values)
             {
-                "Instant Poison",
-                "Instant Poison II",
-                "Instant Poison III",
-                "Instant Poison IV",
-                "Instant Poison V",
-                "Instant Poison VI",
-                "Instant Poison VII",
-                "Deadly Poison",
-                "Deadly Poison II",
-                "Deadly Poison III",
-                "Deadly Poison IV",
-                "Deadly Poison V",
-                "Deadly Poison VI",
-                "Deadly Poison VII"
-            });
+                string name = ItemsManager.GetNameById(poisonId);
+                if (!string.IsNullOrEmpty(name))
+                    poisonNames.Add(name);
+            }
+            foreach (uint poisonId in DeadlyPoisonDictionary.Values)
+            {
+                string name = ItemsManager.GetNameById(poisonId);
+                if (!string.IsNullOrEmpty(name))
+                    poisonNames.Add(name);
+            }
+            WTSettings.AddToDoNotSellList(poisonNames);
 
             FightEvents.OnFightEnd += FightEndHandler;
             FightEvents.OnFightStart += FightStartHandler;
@@ -284,28 +281,28 @@ namespace WholesomeTBCAIO.Rotations.Rogue
 
         protected Dictionary<int, uint> InstantPoisonDictionary = new Dictionary<int, uint>
         {
-            { 20, 6947 },
-            { 28, 6949 },
-            { 36, 6950 },
-            { 44, 8926 },
-            { 52, 8927 },
-            { 60, 8928 },
-            { 68, 21927 },
-            { 73, 43230 },
-            { 79, 43231 },
+            { 20, ItemIds.InstantPoison },
+            { 28, ItemIds.InstantPoisonII },
+            { 36, ItemIds.InstantPoisonIII },
+            { 44, ItemIds.InstantPoisonIV },
+            { 52, ItemIds.InstantPoisonV },
+            { 60, ItemIds.InstantPoisonVI },
+            { 68, ItemIds.InstantPoisonVII },
+            { 73, ItemIds.InstantPoisonVIII },
+            { 79, ItemIds.InstantPoisonIX },
         };
 
         protected Dictionary<int, uint> DeadlyPoisonDictionary = new Dictionary<int, uint>
         {
-            { 30, 2892 },
-            { 38, 2893 },
-            { 46, 8984 },
-            { 54, 8985 },
-            { 60, 20844 },
-            { 62, 22053 },
-            { 70, 22054 },
-            { 76, 43232 },
-            { 80, 43233 },
+            { 30, ItemIds.DeadlyPoison },
+            { 38, ItemIds.DeadlyPoisonII },
+            { 46, ItemIds.DeadlyPoisonIII },
+            { 54, ItemIds.DeadlyPoisonIV },
+            { 60, ItemIds.DeadlyPoisonV },
+            { 62, ItemIds.DeadlyPoisonVI },
+            { 70, ItemIds.DeadlyPoisonVII },
+            { 76, ItemIds.DeadlyPoisonVIII },
+            { 80, ItemIds.DeadlyPoisonIX },
         };
 
         protected void StealthApproach()

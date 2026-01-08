@@ -164,8 +164,8 @@ namespace WholesomeTBCAIO.Rotations.Shaman
             }
 
             bool focusedCasting = Me.HasAura("Focused Casting");
-            // Frost Shock
-            if ((Target.CreatureTypeTarget == "Humanoid" || Target.Name.Contains("Plainstrider"))
+            // Frost Shock (language-independent creature type check)
+            if ((Target.IsHumanoid || Target.Name.Contains("Plainstrider"))
                 && settings.ELE_FrostShockHumanoids
                 && Target.HealthPercent < 40
                 && !Target.HasAura(FrostShock)

@@ -143,8 +143,8 @@ namespace WholesomeTBCAIO.Rotations.Mage
                 && cast.OnSelf(ArcanePower))
                 return;
 
-            // Slow
-            if ((settings.SARC_ACSlow || Target.CreatureTypeTarget == "Humanoid")
+            // Slow (language-independent creature type check)
+            if ((settings.SARC_ACSlow || Target.IsHumanoid)
                 && !Target.HasAura(Slow)
                 && cast.OnTarget(Slow))
                 return;

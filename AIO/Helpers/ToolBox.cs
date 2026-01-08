@@ -166,6 +166,23 @@ namespace WholesomeTBCAIO.Helpers
             UseFirstMatchingItem(consumables);
         }
 
+        /// <summary>
+        /// Uses a consumable to self heal using item IDs (language-independent)
+        /// </summary>
+        public static void UseConsumableToSelfHealById()
+        {
+            List<uint> healthstones = new List<uint>
+            {
+                ItemIds.MasterHealthstone,
+                ItemIds.MajorHealthstone,
+                ItemIds.GreaterHealthstone,
+                ItemIds.Healthstone,
+                ItemIds.LesserHealthstone,
+                ItemIds.MinorHealthstone
+            };
+            UseFirstMatchingItemById(healthstones);
+        }
+
         // Uses the first item found in your bags that matches any element from the list
         public static void UseFirstMatchingItem(List<string> list)
         {
@@ -176,6 +193,85 @@ namespace WholesomeTBCAIO.Helpers
                 {
                     ItemsManager.UseItemByNameOrId(item.Name);
                     Logger.Log("Using " + item.Name);
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Uses the first item found in your bags that matches any element from the ID list (language-independent)
+        /// </summary>
+        public static void UseFirstMatchingItemById(List<uint> itemIds)
+        {
+            List<WoWItem> _bagItems = Bag.GetBagItem();
+            foreach (WoWItem item in _bagItems)
+            {
+                if (itemIds.Contains((uint)item.Entry))
+                {
+                    ItemsManager.UseItemByNameOrId(item.Entry.ToString());
+                    Logger.Log($"Using item ID {item.Entry}");
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Check if player has any item from the ID list in bags (language-independent)
+        /// </summary>
+        public static bool HaveItemById(uint itemId)
+        {
+            List<WoWItem> _bagItems = Bag.GetBagItem();
+            return _bagItems.Exists(i => i.Entry == itemId);
+        }
+
+        /// <summary>
+        /// Check if player has any item from the ID list in bags (language-independent)
+        /// </summary>
+        public static bool HaveAnyItemById(List<uint> itemIds)
+        {
+            List<WoWItem> _bagItems = Bag.GetBagItem();
+            return _bagItems.Exists(i => itemIds.Contains((uint)i.Entry));
+        }
+
+        /// <summary>
+        /// Get item cooldown by item ID (language-independent)
+        /// </summary>
+        public static int GetItemCooldownById(uint itemId)
+        {
+            return Lua.LuaDoString<int>($@"
+                local startTime, duration, enable = GetItemCooldown({itemId});
+                if startTime == nil then return 0 end
+                return (duration - (GetTime() - startTime)) * 1000;
+            ");
+        }
+
+        /// <summary>
+        /// Count item stacks by item ID (language-independent)
+        /// </summary>
+        public static int CountItemStacksById(uint itemId)
+        {
+            int count = 0;
+            List<WoWItem> _bagItems = Bag.GetBagItem();
+            foreach (WoWItem item in _bagItems)
+            {
+                if (item.Entry == itemId)
+                    count += ItemsManager.GetItemCount(item.Entry);
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Delete items by item ID (language-independent)
+        /// </summary>
+        public static void DeleteItemById(uint itemId)
+        {
+            List<WoWItem> _bagItems = Bag.GetBagItem();
+            foreach (WoWItem item in _bagItems)
+            {
+                if (item.Entry == itemId)
+                {
+                    Logger.Log($"Deleting item ID {itemId}");
+                    Lua.LuaDoString($"PickupContainerItem({item.BagIndex}, {item.SlotIndex}); DeleteCursorItem();");
                     return;
                 }
             }

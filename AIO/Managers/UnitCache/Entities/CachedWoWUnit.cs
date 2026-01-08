@@ -100,6 +100,10 @@ namespace WholesomeTBCAIO.Managers.UnitCache.Entities
 
         public bool HasAura(AIOSpell spell) => Auras.ContainsKey(spell.SpellId);
         public bool HasAura(string spell) => WowUnit.HaveBuff(spell);
+        /// <summary>
+        /// Check if unit has an aura by spell ID (language-independent)
+        /// </summary>
+        public bool HasAuraById(uint spellId) => Auras.ContainsKey(spellId);
 
         public bool HasMyAura(AIOSpell spell) // only works for other players, player always returns true
         {
@@ -168,5 +172,22 @@ namespace WholesomeTBCAIO.Managers.UnitCache.Entities
             71071, 71073, 71074
         };
         public bool HasFoodAura => Auras.Any(aura => _foodAuras.Contains(aura.Key));
+
+        // Creature type checking (language-independent)
+        private int? _creatureTypeId = null;
+        private int GetCreatureTypeId()
+        {
+            if (_creatureTypeId == null)
+            {
+                _creatureTypeId = AuraHelper.GetCreatureTypeIdFromString(CreatureTypeTarget);
+            }
+            return _creatureTypeId.Value;
+        }
+
+        public bool IsHumanoid => GetCreatureTypeId() == CreatureTypes.Humanoid;
+        public bool IsUndead => GetCreatureTypeId() == CreatureTypes.Undead;
+        public bool IsDemon => GetCreatureTypeId() == CreatureTypes.Demon;
+        public bool IsBeast => GetCreatureTypeId() == CreatureTypes.Beast;
+        public bool IsGiant => GetCreatureTypeId() == CreatureTypes.Giant;
     }
 }

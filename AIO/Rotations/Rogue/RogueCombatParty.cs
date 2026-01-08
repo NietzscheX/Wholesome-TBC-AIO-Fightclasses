@@ -86,9 +86,9 @@ namespace WholesomeTBCAIO.Rotations.Rogue
                 && cast.OnSelf(BladeFlurry))
                 return;
 
-            // Riposte
+            // Riposte (language-independent creature type check)
             if (Riposte.IsSpellUsable
-                && (Target.CreatureTypeTarget.Equals("Humanoid") || settings.PC_RiposteAll)
+                && (Target.IsHumanoid || settings.PC_RiposteAll)
                 && cast.OnTarget(Riposte))
                 return;
 

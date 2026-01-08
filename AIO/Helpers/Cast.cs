@@ -395,7 +395,7 @@ namespace WholesomeTBCAIO.Helpers
                 Vector3 spellPosition = _currentSpellLocation != null ? _currentSpellLocation : _currentSpellTarget.PositionWithoutType;
                 if (_currentSpell.MaxRange > 0 && spellPosition.DistanceTo(Me.Position) > _currentSpell.MaxRange || TraceLine.TraceLineGo(spellPosition))
                 {
-                    if (Me.HaveBuff("Spirit of Redemption"))
+                    if (AuraHelper.UnitHasAuraById(Me, SpellIds.SpiritOfRedemption))
                         return false;
 
                     Logger.LogFight($"Target not in range/sight, recycling {_currentSpell.Name}");

@@ -52,8 +52,33 @@ namespace WholesomeTBCAIO.Managers.UnitCache.Entities
         bool HasAura(AIOSpell spell);
         bool HasMyAura(AIOSpell spell);
         bool HasAura(string spell);
+        /// <summary>
+        /// Check if unit has an aura by spell ID (language-independent)
+        /// </summary>
+        bool HasAuraById(uint spellId);
         int BuffStacks(AIOSpell spell);
         bool IsFacing(Vector3 position, float arcRadians);
         int AuraTimeLeft(AIOSpell spell);
+        
+        /// <summary>
+        /// Check if this unit is humanoid (language-independent)
+        /// </summary>
+        bool IsHumanoid { get; }
+        /// <summary>
+        /// Check if this unit is undead (language-independent)
+        /// </summary>
+        bool IsUndead { get; }
+        /// <summary>
+        /// Check if this unit is demon (language-independent)
+        /// </summary>
+        bool IsDemon { get; }
+        /// <summary>
+        /// Check if this unit is beast (language-independent)
+        /// </summary>
+        bool IsBeast { get; }
+        /// <summary>
+        /// Check if this unit is giant (language-independent)
+        /// </summary>
+        bool IsGiant { get; }
     }
 }

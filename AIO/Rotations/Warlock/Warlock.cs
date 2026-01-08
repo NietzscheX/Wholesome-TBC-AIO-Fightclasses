@@ -196,18 +196,18 @@ namespace WholesomeTBCAIO.Rotations.Warlock
 
         protected override void BuffRotation()
         {
-            // Delete additional Soul Shards
-            if (WTItem.CountItemStacks("Soul Shard") > settings.CommonNumberOfSoulShards)
+            // Delete additional Soul Shards (language-independent)
+            if (WarlockPetAndConsumables.CountSoulShards() > settings.CommonNumberOfSoulShards)
             {
                 Logger.Log("Deleting excess Soul Shard");
-                WTItem.DeleteItemByName("Soul Shard");
+                WarlockPetAndConsumables.DeleteOneSoulShard();
             }
 
             // Define the demon to summon
             AIOSpell SummonSpell = null;
             if (SummonImp.KnownSpell)
             {
-                if (WTItem.CountItemStacks("Soul Shard") < 1 || !SummonVoidwalker.KnownSpell && !SummonFelguard.KnownSpell)
+                if (WarlockPetAndConsumables.CountSoulShards() < 1 || !SummonVoidwalker.KnownSpell && !SummonFelguard.KnownSpell)
                     SummonSpell = SummonImp;
 
                 if (SummonVoidwalker.KnownSpell && !SummonFelguard.KnownSpell)

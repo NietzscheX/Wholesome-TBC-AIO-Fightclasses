@@ -21,12 +21,13 @@ namespace WholesomeTBCAIO.Rotations.Rogue
             base.BuffRotation();
         }
 
+        // Check if target can be pickpocketed (language-independent)
         private bool CanDismantle()
         {
-            return Target.CreatureTypeTarget.Equals("Humanoid") ||
-             Target.CreatureTypeTarget.Equals("Undead") ||
-             Target.CreatureTypeTarget.Equals("Demon") ||
-             Target.CreatureTypeTarget.Equals("Giant");
+            return Target.IsHumanoid ||
+             Target.IsUndead ||
+             Target.IsDemon ||
+             Target.IsGiant;
         }
 
         protected override void Pull()
@@ -64,11 +65,7 @@ namespace WholesomeTBCAIO.Rotations.Rogue
             // Auto
             if (Target.GetDistance < 6f && !Me.HasAura(Stealth))
                 ToggleAutoAttack(true);
-        }
-        private bool CanDismantle(WoWUnit unit)
-        {
-            return unit.
-        }
+
         protected override void CombatRotation()
         {
             base.CombatRotation();
@@ -125,9 +122,8 @@ namespace WholesomeTBCAIO.Rotations.Rogue
                 if (cast.OnTarget(BladeFlurry))
                     return;
 
-            // Riposte
-            // 战斗天赋的还击
-            if (Riposte.IsSpellUsable && (Target.CreatureTypeTarget.Equals("Humanoid") || settings.SC_RiposteAll))
+            // Riposte (language-independent creature type check)
+            if (Riposte.IsSpellUsable && (Target.IsHumanoid || settings.SC_RiposteAll))
                 if (cast.OnTarget(Riposte))
                     return;
 

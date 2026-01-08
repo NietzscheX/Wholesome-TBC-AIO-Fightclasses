@@ -51,8 +51,8 @@ namespace WholesomeTBCAIO.Rotations.Warlock
                 && cast.OnSelf(DemonSkin))
                 return;
 
-            // Soul Link
-            if (!Me.HasAura("Soul Link")
+            // Soul Link (using spell ID)
+            if (!Me.HasAuraById(SpellIds.SoulLink)
                 && Pet.IsAlive
                 && cast.OnSelf(SoulLink))
                 return;
@@ -91,16 +91,16 @@ namespace WholesomeTBCAIO.Rotations.Warlock
                 && cast.OnSelf(CreateSoulstone))
                 return;
 
-            // Use Soul Stone
-            if (!Me.HasAura("Soulstone Resurrection")
+            // Use Soul Stone (language-independent)
+            if (!Me.HasAuraById(SpellIds.SoulstoneResurrection)
                 && CreateSoulstone.KnownSpell
-                && WTItem.HaveOneInList(WarlockPetAndConsumables.SOULSTONES)
-                && ToolBox.GetItemCooldown(WarlockPetAndConsumables.SOULSTONES) <= 0)
+                && WarlockPetAndConsumables.HaveSoulstone()
+                && WarlockPetAndConsumables.GetSoulstoneCooldown() <= 0)
             {
                 MovementManager.StopMoveNewThread();
                 MovementManager.StopMoveToNewThread();
                 Lua.RunMacroText("/target player");
-                ToolBox.UseFirstMatchingItem(WarlockPetAndConsumables.SOULSTONES);
+                WarlockPetAndConsumables.UseSoulstone();
                 Usefuls.WaitIsCasting();
                 Lua.RunMacroText("/cleartarget");
             }
@@ -148,9 +148,9 @@ namespace WholesomeTBCAIO.Rotations.Warlock
                 && cast.OnTarget(Corruption))
                 return;
 
-            // Immolate
+            // Immolate (check Fire Ward by spell ID)
             if (!Target.HasAura(Immolate)
-                && !Target.HasAura("Fire Ward")
+                && !Target.HasAuraById(SpellIds.FireWard)
                 && !Corruption.KnownSpell
                 && cast.OnTarget(Immolate))
                 return;
@@ -168,8 +168,8 @@ namespace WholesomeTBCAIO.Rotations.Warlock
             double myManaPC = Me.ManaPercentage;
             bool overLowManaThreshold = myManaPC > _innerManaSaveThreshold;
 
-            // Drain Soul
-            bool _shouldDrainSoul = WTItem.CountItemStacks("Soul Shard") < settings.CommonNumberOfSoulShards || settings.DEM_AlwaysDrainSoul;
+            // Drain Soul (language-independent)
+            bool _shouldDrainSoul = WarlockPetAndConsumables.CountSoulShards() < settings.CommonNumberOfSoulShards || settings.DEM_AlwaysDrainSoul;
             if (_shouldDrainSoul
                 && Target.HealthPercent < settings.DEM_DrainSoulHP
                 && Target.Level >= Me.Level - 8
@@ -191,8 +191,8 @@ namespace WholesomeTBCAIO.Rotations.Warlock
             if (Me.HealthPercent < 15)
                 WarlockPetAndConsumables.UseHealthstone();
 
-            // Shadow Trance
-            if (Me.HasAura("Shadow Trance")
+            // Shadow Trance (using spell ID)
+            if (Me.HasAuraById(SpellIds.ShadowTrance)
                 && overLowManaThreshold
                 && cast.OnTarget(ShadowBolt))
                 return;
@@ -238,9 +238,9 @@ namespace WholesomeTBCAIO.Rotations.Warlock
                 && cast.OnTarget(Corruption))
                 return;
 
-            // Immolate
+            // Immolate (check Fire Ward by spell ID)
             if (!Target.HasAura(Immolate)
-                && !Target.HasAura("Fire Ward")
+                && !Target.HasAuraById(SpellIds.FireWard)
                 && overLowManaThreshold
                 && Target.HealthPercent > 30
                 && (settings.DEM_ImmolateHighLevel || !UnstableAffliction.KnownSpell)

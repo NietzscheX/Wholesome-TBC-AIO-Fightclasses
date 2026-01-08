@@ -135,8 +135,8 @@ namespace WholesomeTBCAIO.Rotations.Mage
                 && cast.OnSelf(ColdSnap))
                 return;
 
-            // Slow
-            if (Target.CreatureTypeTarget == "Humanoid"
+            // Slow (language-independent creature type check)
+            if (Target.IsHumanoid
                 && !Target.HasAura(Slow)
                 && Target.HealthPercent < 10
                 && Me.ManaPercentage > 10
